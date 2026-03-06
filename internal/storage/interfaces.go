@@ -43,7 +43,7 @@ func SeaweedUpload(batchField string,
 	return fid, nil
 }
 
-func processBatch(batchJSON []byte, storage *Storage) error {
+func ProcessBatch(batchJSON []byte, storage *Storage) error {
 	var batch map[string]interface{}
 
 	err := json.Unmarshal(batchJSON, &batch)
