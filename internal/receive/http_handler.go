@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/EvgeniiMart/MIPT_fiton_CVingest/internal/storage"
 )
 
 type AcceptResponse struct {
@@ -22,7 +24,8 @@ func writeError(w http.ResponseWriter, msg string) {
 	json.NewEncoder(w).Encode(ErrorResponse{Error: msg})
 }
 
-func IngestBatchHandler(schemaPath string) http.HandlerFunc {
+func IngestBatchHandler(schemaPath string,
+	storages *storage.Storage) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
@@ -54,6 +57,12 @@ func IngestBatchHandler(schemaPath string) http.HandlerFunc {
 			Metadata struct {
 				BatchID string `json:"batch_id"`
 			} `json:"metadata"`
+		}
+
+		if err := storage.ProcessBatch(jsonData,
+			storages); err != nil {
+			writeError(w, "error saving batch: "+err.Error())
+			return
 		}
 
 		if err := json.Unmarshal(jsonData, &parsed); err != nil {

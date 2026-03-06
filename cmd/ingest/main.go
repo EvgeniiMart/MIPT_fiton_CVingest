@@ -5,14 +5,16 @@ import (
 	"net/http"
 
 	"github.com/EvgeniiMart/MIPT_fiton_CVingest/internal/receive"
+	"github.com/EvgeniiMart/MIPT_fiton_CVingest/internal/storage"
 )
 
 const schemaPath = "data/json_schemas/cv_protocol.schema.json"
 
 func main() {
+	var st = storage.NewMockStorage()
 
 	http.HandleFunc("/api/v1/ingest/batch",
-		receive.IngestBatchHandler(schemaPath))
+		receive.IngestBatchHandler(schemaPath, st))
 
 	fmt.Println("Server started on :8080")
 
