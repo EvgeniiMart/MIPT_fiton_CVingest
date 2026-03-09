@@ -60,43 +60,6 @@ func GetMultipartElement(elementName string,
 	return nil
 }
 
-// Нас попросили в CV-протоколе поставить фрукты в mask, но через
-// multiform их проще передавать в metadata, ведь это json. Эта
-// функция возвращает структуру в соответствие с CV-протоколом
-func MoveFruitsField(batch *Batch) error {
-	var metadata map[string]any
-	if err := json.Unmarshal(batch.Metadata, &metadata); err != nil {
-		return fmt.Errorf("Error moving fruits field: %w", err)
-	}
-
-	if maskVal, ok := metadata["mask"].(map[string]any); ok {
-		if fruits, ok := maskVal["fruits"]; ok {
-			if batch.Mask == nil {
-				batch.Mask = &Mask{}
-			}
-
-			fruitsBytes, err := json.Marshal(fruits)
-			if err != nil {
-				return fmt.Errorf("Error moving fruits field: %w",
-					err)
-			}
-
-			batch.Mask.Fruits = fruitsBytes
-
-			delete(maskVal, "fruits")
-		}
-	}
-
-	metadataBytes, err := json.Marshal(metadata)
-	if err != nil {
-		return fmt.Errorf("Error moving fruits field: %w", err)
-	}
-
-	batch.Metadata = metadataBytes
-
-	return nil
-}
-
 func ParseMultipart(form *multipart.Form) ([]byte, error) {
 	batch := Batch{}
 
@@ -109,10 +72,6 @@ func ParseMultipart(form *multipart.Form) ([]byte, error) {
 	GetMultipartElement("image", form, &batch)
 	GetMultipartElement("mask", form, &batch)
 	GetMultipartElement("raw", form, &batch)
-
-	if err := MoveFruitsField(&batch); err != nil {
-		return nil, err
-	}
 
 	return json.Marshal(batch)
 }
